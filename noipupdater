@@ -1,15 +1,21 @@
 #!/bin/bash
 
-# No-IP uses emails as passwords, so make sure that you encode the @ as %40
-USERNAME=username
-PASSWORD=password
-HOST=hostsite
-LOGFILE=logdir/noip.log
-STOREDIPFILE=configdir/current_ip
+CONFIGDIR="$HOME/.noipupdater"
+CONFIGFILE="$CONFIGDIR/noipupdater.conf"
+LOGFILE="$CONFIGDIR/log/noipupdater.log"
+STOREDIPFILE="$CONFIGDIR/cache/current_ip"
 USERAGENT="Simple Bash No-IP Updater/0.4 antoniocs@gmail.com"
 
-if [ ! -e $STOREDIPFILE ]; then 
-	touch $STOREDIPFILE
+[ -d $CONFIGDIR ] || mkdir $CONFIGDIR
+[ -d $CONFIGDIR/log ] || mkdir $CONFIGDIR/log
+[ -d $CONFIGDIR/cache ] || mkdir $CONFIGDIR/cache
+[ -e $STOREDIPFILE ] || touch $STOREDIPFILE
+
+if [ -f $CONFIGFILE ]; then
+    . $CONFIGFILE
+else
+    echo "Please create $CONFIGFILE and fill in the variables: USERNAME, PASSWORD, HOST"
+    exit 1
 fi
 
 NEWIP=$(wget -O - http://icanhazip.com/ -o /dev/null)
@@ -25,6 +31,3 @@ else
 fi
 
 echo $LOGLINE >> $LOGFILE
-
-exit 0
-
