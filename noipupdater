@@ -12,22 +12,29 @@ USERAGENT="Simple Bash No-IP Updater/0.4 antoniocs@gmail.com"
 [ -e $STOREDIPFILE ] || touch $STOREDIPFILE
 
 if [ -f $CONFIGFILE ]; then
-    . $CONFIGFILE
+    source $CONFIGFILE > /dev/null 2>&1 || exit 1
 else
-    echo "Please create $CONFIGFILE and fill in the variables: USERNAME, PASSWORD, HOST"
+    echo "Please create $CONFIGFILE and fill in the variables:
+    USERNAME, PASSWORD, HOST, SSID
+    optional: ROUTERURL, ROUTERUSER, ROUTERPASSWORD, ROUTERWANIPSTR"
     exit 1
 fi
 
-NEWIP=$(wget -O - http://icanhazip.com/ -o /dev/null)
+if [ -n $SSID ]; then
+    CURRENTSSID=$(/usr/sbin/iw wlp3s0 link | grep SSID | cut -d' ' -f2)
+    [ $CURRENTSSID != $SSID ] && exit 1
+fi
+
+if [ -n $ROUTERURL ]; then
+    NEWIP=$(curl -s "http://$ROUTERUSER:$ROUTERPASSWORD@$ROUTERURL" | grep -m 1 $ROUTERWANIPSTR | cut -d"'" -f2)
+else
+    NEWIP=$(wget -O - http://icanhazip.com/ -o /dev/null)
+fi
+
 STOREDIP=$(cat $STOREDIPFILE)
 
 if [ "$NEWIP" != "$STOREDIP" ]; then
-	RESULT=$(wget -O - -q --user-agent="$USERAGENT" --no-check-certificate "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
-
-	LOGLINE="[$(date +"%Y-%m-%d %H:%M:%S")] $RESULT"
-	echo $NEWIP > $STOREDIPFILE
-else
-	LOGLINE="[$(date +"%Y-%m-%d %H:%M:%S")] No IP change"
+    RESULT=$(curl -k -s --user-agent "$USERAGENT" "https://$USERNAME:$PASSWORD@dynupdate.no-ip.com/nic/update?hostname=$HOST&myip=$NEWIP")
+    echo $NEWIP > $STOREDIPFILE
+    echo "[$(date +"%Y-%m-%d %H:%M:%S")] $RESULT" >> $LOGFILE
 fi
-
-echo $LOGLINE >> $LOGFILE
