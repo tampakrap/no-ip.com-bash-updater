@@ -11,8 +11,10 @@ USERAGENT="Simple Bash No-IP Updater/0.4 antoniocs@gmail.com"
 [ -d $CONFIGDIR/cache ] || mkdir $CONFIGDIR/cache
 [ -e $STOREDIPFILE ] || touch $STOREDIPFILE
 
+set -e
+
 if [ -f $CONFIGFILE ]; then
-    source $CONFIGFILE > /dev/null 2>&1 || exit 1
+    source $CONFIGFILE
 else
     echo "Please create $CONFIGFILE and fill in the variables:
     USERNAME, PASSWORD, HOST, SSID
