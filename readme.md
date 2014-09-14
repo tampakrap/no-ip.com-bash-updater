@@ -6,9 +6,10 @@ Bash script to update the ip of an account on no-ip.com
 How to use
 ----------
 
-* Create $HOME/.noipupdater/noipupdater.conf and add there USERNAME, PASSWORD and HOSTNAME
-* Run it (`./noipupdater`)
-* Log files will be kept in $HOME/.noipupdater/log
+* Copy noipupdaterrc.sample to $HOME/.noipupdaterrc
+* Fill in the variables in .noipupdaterrc accordingly
+* Run the script (`./noipupdater`)
+* Log files will be kept in $LOGDIR/noipupdater.log
 
 Tips!
 -----
